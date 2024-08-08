@@ -1,7 +1,9 @@
 package it.danielebonaldo.filamentdemo
 
+import android.animation.ValueAnimator
 import android.view.Surface
 import android.view.SurfaceView
+import android.view.animation.LinearInterpolator
 import com.google.android.filament.Camera
 import com.google.android.filament.Engine
 import com.google.android.filament.Renderer
@@ -11,6 +13,10 @@ import com.google.android.filament.View
 import com.google.android.filament.Viewport
 import com.google.android.filament.android.DisplayHelper
 import com.google.android.filament.android.UiHelper
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.random.Random
 
 private const val kNearPlane = 0.5
 private const val kFarPlane = 10000.0
@@ -21,7 +27,8 @@ private const val kSensitivity = 100f
 
 class ModelViewer(
     val engine: Engine,
-    val surfaceView: SurfaceView
+    val surfaceView: SurfaceView,
+    autoRotate: Boolean = false
 ) {
     val view: View = engine.createView()
     val camera: Camera =
@@ -37,6 +44,8 @@ class ModelViewer(
     private var swapChain: SwapChain? = null
     private val renderer: Renderer = engine.createRenderer()
 
+    private val animator = ValueAnimator.ofFloat(0.0f, (2.0 * PI).toFloat())
+
     init {
         view.camera = camera
 
@@ -44,11 +53,29 @@ class ModelViewer(
         uiHelper.renderCallback = SurfaceCallback()
         uiHelper.attachTo(surfaceView)
         addDetachListener(surfaceView)
-        camera.lookAt(
-            4.0, 0.5, 4.0,
-            0.0, 0.0, 0.0,
-            0.0, 1.0, 0.0
-        )
+        if (autoRotate) {
+            val start = Random.nextFloat()
+
+            animator.interpolator = LinearInterpolator()
+            animator.duration = 36_000
+            animator.repeatMode = ValueAnimator.RESTART
+            animator.repeatCount = ValueAnimator.INFINITE
+            animator.addUpdateListener { a ->
+                val v = (a.animatedValue as Float) + start
+                camera.lookAt(
+                    cos(v) * 5.0, 0.5, sin(v) * 5.0,
+                    0.0, 0.0, 0.0,
+                    0.0, 1.0, 0.0
+                )
+            }
+            animator.start()
+        } else {
+            camera.lookAt(
+                4.0, 0.5, 4.0,
+                0.0, 0.0, 0.0,
+                0.0, 1.0, 0.0
+            )
+        }
     }
 
     fun render(frameTimeNanos: Long) {
@@ -74,6 +101,7 @@ class ModelViewer(
 
             override fun onViewDetachedFromWindow(v: android.view.View) {
                 if (!detached) {
+                    animator.cancel()
 
                     uiHelper.detach()
 
