@@ -1,6 +1,7 @@
 package it.danielebonaldo.filamentdemo
 
 import android.animation.ValueAnimator
+import android.view.MotionEvent
 import android.view.Surface
 import android.view.SurfaceView
 import android.view.animation.LinearInterpolator
@@ -13,6 +14,8 @@ import com.google.android.filament.View
 import com.google.android.filament.Viewport
 import com.google.android.filament.android.DisplayHelper
 import com.google.android.filament.android.UiHelper
+import com.google.android.filament.utils.GestureDetector
+import com.google.android.filament.utils.Manipulator
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -28,7 +31,7 @@ private const val kSensitivity = 100f
 class ModelViewer(
     val engine: Engine,
     val surfaceView: SurfaceView,
-    autoRotate: Boolean = false
+    val autoRotate: Boolean = false
 ) {
     val view: View = engine.createView()
     val camera: Camera =
@@ -44,6 +47,13 @@ class ModelViewer(
     private var swapChain: SwapChain? = null
     private val renderer: Renderer = engine.createRenderer()
 
+    private val cameraManipulator: Manipulator
+    private val gestureDetector: GestureDetector
+
+    private val eyePos = DoubleArray(3)
+    private val target = DoubleArray(3)
+    private val upward = DoubleArray(3)
+
     private val animator = ValueAnimator.ofFloat(0.0f, (2.0 * PI).toFloat())
 
     init {
@@ -53,6 +63,14 @@ class ModelViewer(
         uiHelper.renderCallback = SurfaceCallback()
         uiHelper.attachTo(surfaceView)
         addDetachListener(surfaceView)
+
+        cameraManipulator = Manipulator.Builder()
+            .orbitHomePosition(4.0f, 0.5f,4.0f)
+            .viewport(surfaceView.width, surfaceView.height)
+            .orbitSpeed(0.005f, 0.005f)
+            .build(Manipulator.Mode.ORBIT)
+        gestureDetector = GestureDetector(surfaceView, cameraManipulator)
+
         if (autoRotate) {
             val start = Random.nextFloat()
 
@@ -78,10 +96,23 @@ class ModelViewer(
         }
     }
 
+    fun onTouchEvent(event: MotionEvent) {
+        if (!autoRotate) {
+            gestureDetector.onTouchEvent(event)
+        }
+    }
+
     fun render(frameTimeNanos: Long) {
         if (!uiHelper.isReadyToRender) {
             return
         }
+
+        cameraManipulator.getLookAt(eyePos, target, upward)
+        camera.lookAt(
+            eyePos[0], eyePos[1], eyePos[2],
+            target[0], target[1], target[2],
+            upward[0], upward[1], upward[2]
+        )
 
         // Render the scene, unless the renderer wants to skip the frame.
         if (renderer.beginFrame(swapChain!!, frameTimeNanos)) {
@@ -134,6 +165,7 @@ class ModelViewer(
 
         override fun onResized(width: Int, height: Int) {
             view.viewport = Viewport(0, 0, width, height)
+            cameraManipulator.setViewport(width, height)
             val aspect = width.toDouble() / height.toDouble()
             camera.setProjection(kFovDegrees, aspect, kNearPlane, kFarPlane, Camera.Fov.VERTICAL)
         }

@@ -57,6 +57,11 @@ fun FilamentViewer(item: Item) {
             val (engine) = item.itemScene
             modelViewer = ModelViewer(engine, surfaceView).also { modelViewer ->
                 setupModelViewer(modelViewer)
+
+                surfaceView.setOnTouchListener { _, event ->
+                    modelViewer.onTouchEvent(event)
+                    true
+                }
             }
         }
     })
