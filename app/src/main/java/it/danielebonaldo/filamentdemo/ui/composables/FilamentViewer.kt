@@ -1,11 +1,14 @@
 package it.danielebonaldo.filamentdemo.ui.composables
 
+import android.util.Log
 import android.view.TextureView
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.viewinterop.AndroidView
 import com.google.android.filament.Colors
@@ -35,14 +38,18 @@ fun FilamentViewer(item: Item) {
             val manager = engine.renderableManager
             val instance = manager.getInstance(entity)
             val material = manager.getMaterialInstanceAt(instance, 0)
-
-            val r = item.currentColor.red
-            val g = item.currentColor.green
-            val b = item.currentColor.blue
-
-            material.setParameter(
-                "baseColorFactor", Colors.RgbaType.SRGB, r, g, b, 1.0f
+            Log.d(
+                "FilamentViewer",
+                "Material parameters: ${material.material.parameters.joinToString { "${it.name} (${it.type})" }}"
             )
+
+            val r = item.material.color.red
+            val g = item.material.color.green
+            val b = item.material.color.blue
+            material.setParameter("baseColorFactor", Colors.RgbaType.SRGB, r, g, b, 1.0f)
+
+            material.setParameter("metallicFactor", item.material.metallicFactor)
+            material.setParameter("roughnessFactor", item.material.roughness)
         }
     }
 

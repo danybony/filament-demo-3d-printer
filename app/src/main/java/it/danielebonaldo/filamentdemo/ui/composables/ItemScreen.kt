@@ -14,6 +14,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.material3.Slider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -24,6 +26,8 @@ import it.danielebonaldo.filamentdemo.models.Item
 fun ItemScreen(
     item: Item,
     onColorSelected: (Color) -> Unit,
+    onMetallicUpdated: (Float) -> Unit,
+    onRoughnessUpdated: (Float) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.padding(8.dp)) {
@@ -32,7 +36,9 @@ fun ItemScreen(
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.primary
         )
-        ColorSelector(item.currentColor, onColorSelected)
+        ColorSelector(item.material.color, onColorSelected)
+        ParameterSlider("Metallic", item.material.metallicFactor, onMetallicUpdated)
+        ParameterSlider("Roughness", item.material.roughness, onRoughnessUpdated)
 
         FilamentViewer(item = item)
     }
@@ -64,4 +70,21 @@ fun ColorSelector(
             )
         }
     }
+}
+
+@Composable
+fun ParameterSlider(
+    name: String,
+    currentValue: Float,
+    onValueUpdated: (Float) -> Unit
+) {
+    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+        Text(text = name, modifier = Modifier.fillMaxWidth(0.3f))
+        Slider(
+            value = currentValue,
+            onValueChange = onValueUpdated,
+            modifier = Modifier.weight(1f)
+        )
+    }
+
 }

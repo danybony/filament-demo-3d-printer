@@ -39,9 +39,9 @@ class MainActivity : ComponentActivity() {
                     if (item != null) {
                         ItemScreen(
                             item = item,
-                            onColorSelected = { color ->
-                                viewModel.onColorSelected(item, color)
-                            },
+                            onColorSelected = { viewModel.onColorSelected(item, it) },
+                            onMetallicUpdated = { viewModel.onMetallicUpdated(item, it) },
+                            onRoughnessUpdated = { viewModel.onRoughnessUpdated(item, it) },
                             modifier = Modifier.padding(innerPadding)
                         )
                     }

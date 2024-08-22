@@ -21,6 +21,7 @@ import com.google.android.filament.gltfio.UbershaderProvider
 import com.google.android.filament.utils.KTX1Loader
 import com.google.android.filament.utils.Utils
 import it.danielebonaldo.filamentdemo.models.Item
+import it.danielebonaldo.filamentdemo.models.ItemMaterial
 import it.danielebonaldo.filamentdemo.models.ItemScene
 import it.danielebonaldo.filamentdemo.models.ItemsUiState
 import kotlinx.collections.immutable.persistentListOf
@@ -95,7 +96,7 @@ class FilamentViewModel(
                 name = "VESA Support",
                 printTime = "2h 45m",
                 itemScene = itemScene,
-                currentColor = Color.Gray
+                material = ItemMaterial()
             )
 
             itemsUiState = itemsUiState.copy(
@@ -105,11 +106,27 @@ class FilamentViewModel(
     }
 
     fun onColorSelected(item: Item, color: Color) {
+        updateMaterial(item) { this.copy(color = color) }
+    }
+
+    fun onMetallicUpdated(item: Item, value: Float) {
+        updateMaterial(item) { this.copy(metallicFactor = value) }
+    }
+
+    fun onRoughnessUpdated(item: Item, value: Float) {
+        updateMaterial(item) { this.copy(roughness = value) }
+    }
+
+    private fun updateMaterial(item: Item, update: ItemMaterial.() -> ItemMaterial) {
         itemsUiState = itemsUiState.copy(
-            buildList {
+            items = buildList {
                 itemsUiState.items.forEach {
                     if (it.id == item.id) {
-                        add(it.copy(currentColor = color))
+                        add(
+                            it.copy(
+                                material = it.material.update()
+                            )
+                        )
                     } else {
                         add(it)
                     }
