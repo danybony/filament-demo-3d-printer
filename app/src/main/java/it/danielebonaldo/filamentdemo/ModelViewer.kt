@@ -3,7 +3,7 @@ package it.danielebonaldo.filamentdemo
 import android.animation.ValueAnimator
 import android.view.MotionEvent
 import android.view.Surface
-import android.view.SurfaceView
+import android.view.TextureView
 import android.view.animation.LinearInterpolator
 import com.google.android.filament.Camera
 import com.google.android.filament.Engine
@@ -30,10 +30,12 @@ private const val kSensitivity = 100f
 
 class ModelViewer(
     val engine: Engine,
-    val surfaceView: SurfaceView,
+    val textureView: TextureView,
     val autoRotate: Boolean = false
 ) {
-    val view: View = engine.createView()
+    val view: View = engine.createView().also {
+        it.blendMode = View.BlendMode.TRANSLUCENT
+    }
     val camera: Camera =
         engine.createCamera(engine.entityManager.create()).apply { setExposure(kAperture, kShutterSpeed, kSensitivity) }
     var scene: Scene? = null
@@ -59,17 +61,23 @@ class ModelViewer(
     init {
         view.camera = camera
 
-        displayHelper = DisplayHelper(surfaceView.context)
+        displayHelper = DisplayHelper(textureView.context)
+        textureView.isOpaque = false
         uiHelper.renderCallback = SurfaceCallback()
-        uiHelper.attachTo(surfaceView)
-        addDetachListener(surfaceView)
+        uiHelper.isOpaque = false
+        uiHelper.attachTo(textureView)
+        renderer.clearOptions = renderer.clearOptions.apply {
+            clear = true
+        }
+
+        addDetachListener(textureView)
 
         cameraManipulator = Manipulator.Builder()
             .orbitHomePosition(4.0f, 0.5f,4.0f)
-            .viewport(surfaceView.width, surfaceView.height)
+            .viewport(textureView.width, textureView.height)
             .orbitSpeed(0.005f, 0.005f)
             .build(Manipulator.Mode.ORBIT)
-        gestureDetector = GestureDetector(surfaceView, cameraManipulator)
+        gestureDetector = GestureDetector(textureView, cameraManipulator)
 
         if (autoRotate) {
             val start = Random.nextFloat()
@@ -151,7 +159,7 @@ class ModelViewer(
         override fun onNativeWindowChanged(surface: Surface) {
             swapChain?.let { engine.destroySwapChain(it) }
             swapChain = engine.createSwapChain(surface)
-            displayHelper.attach(renderer, surfaceView.display)
+            displayHelper.attach(renderer, textureView.display)
         }
 
         override fun onDetachedFromSurface() {

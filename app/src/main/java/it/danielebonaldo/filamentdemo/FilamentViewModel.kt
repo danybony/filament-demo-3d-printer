@@ -42,7 +42,6 @@ class FilamentViewModel(
     }
 
     private lateinit var indirectLight: IndirectLight
-    private lateinit var skybox: Skybox
     private var light: Int = 0
 
     var itemsUiState by mutableStateOf(ItemsUiState())
@@ -63,10 +62,6 @@ class FilamentViewModel(
                 indirectLight.intensity = 30_000.0f
             }
 
-            readCompressedAsset(application, "envs/${ibl}/${ibl}_skybox.ktx").let {
-                skybox = KTX1Loader.createSkybox(engine, it)
-            }
-
             light = EntityManager.get().create()
             val (r, g, b) = Colors.cct(6_000.0f)
             LightManager.Builder(LightManager.Type.SUN)
@@ -84,7 +79,7 @@ class FilamentViewModel(
             newScene.addEntities(asset.entities)
 
             newScene.indirectLight = indirectLight
-            newScene.skybox = skybox
+            newScene.skybox = null
             newScene.addEntity(light)
 
             val itemScene = ItemScene(

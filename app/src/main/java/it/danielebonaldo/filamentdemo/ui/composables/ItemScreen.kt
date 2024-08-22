@@ -1,6 +1,7 @@
 package it.danielebonaldo.filamentdemo.ui.composables
 
 import android.view.SurfaceView
+import android.view.TextureView
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -53,12 +54,12 @@ fun FilamentViewer(item: Item) {
     }
 
     AndroidView({ context ->
-        SurfaceView(context).also { surfaceView ->
+        TextureView(context).also { textureView ->
             val (engine) = item.itemScene
-            modelViewer = ModelViewer(engine, surfaceView).also { modelViewer ->
+            modelViewer = ModelViewer(engine, textureView).also { modelViewer ->
                 setupModelViewer(modelViewer)
 
-                surfaceView.setOnTouchListener { _, event ->
+                textureView.setOnTouchListener { _, event ->
                     modelViewer.onTouchEvent(event)
                     true
                 }
