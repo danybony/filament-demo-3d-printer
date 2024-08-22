@@ -55,6 +55,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.navigation)
     implementation(libs.androidx.ui.text.google.fonts)
     implementation(libs.filament.android)
     implementation(libs.filament.gltfio.android)

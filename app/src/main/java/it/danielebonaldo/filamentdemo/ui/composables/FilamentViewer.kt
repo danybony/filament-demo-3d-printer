@@ -61,10 +61,11 @@ fun FilamentViewer(
             val (engine) = item.itemScene
             modelViewer = ModelViewer(engine, textureView, autoRotate).also { modelViewer ->
                 setupModelViewer(modelViewer)
-
-                textureView.setOnTouchListener { _, event ->
-                    modelViewer.onTouchEvent(event)
-                    true
+                if (!autoRotate) {
+                    textureView.setOnTouchListener { _, event ->
+                        modelViewer.onTouchEvent(event)
+                        true
+                    }
                 }
             }
         }

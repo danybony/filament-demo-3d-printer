@@ -3,7 +3,7 @@ package it.danielebonaldo.filamentdemo.models
 import androidx.compose.ui.graphics.Color
 
 data class Item(
-    val id: Int,
+    val id: String,
     val name: String,
     val printTime: String,
     val material: ItemMaterial,

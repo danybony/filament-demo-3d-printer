@@ -97,7 +97,7 @@ class FilamentViewModel(
 
                 items.add(
                     Item(
-                        id = index,
+                        id = index.toString(),
                         name = item.name,
                         printTime = formatPrintTime(item.printTimeMin),
                         itemScene = itemScene,

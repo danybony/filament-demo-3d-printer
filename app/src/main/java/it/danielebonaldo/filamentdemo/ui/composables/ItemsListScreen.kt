@@ -1,5 +1,6 @@
 package it.danielebonaldo.filamentdemo.ui.composables
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,26 +21,30 @@ import kotlinx.collections.immutable.ImmutableList
 @Composable
 fun ItemsListScreen(
     items: ImmutableList<Item>,
+    onItemSelected: (String) -> Unit,
     modifier: Modifier
 ) {
     LazyColumn(modifier = modifier) {
         items(
             items = items,
             itemContent = { item ->
-                ItemCard(item)
+                ItemCard(item, onItemSelected)
             }
         )
     }
 }
 
 @Composable
-fun ItemCard(item: Item) {
+fun ItemCard(
+    item: Item,
+    onItemSelected: (String) -> Unit
+) {
     Surface(
         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
         shape = RoundedCornerShape(8.dp),
         shadowElevation = 4.dp
     ) {
-        Column {
+        Column(modifier = Modifier.clickable { onItemSelected(item.id) }) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
