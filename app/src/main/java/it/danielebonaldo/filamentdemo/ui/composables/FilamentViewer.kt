@@ -17,7 +17,10 @@ import it.danielebonaldo.filamentdemo.models.Item
 import it.danielebonaldo.filamentdemo.setupModelViewer
 
 @Composable
-fun FilamentViewer(item: Item) {
+fun FilamentViewer(
+    item: Item,
+    autoRotate: Boolean
+) {
     var modelViewer by remember { mutableStateOf<ModelViewer?>(null) }
 
     LaunchedEffect(true) {
@@ -56,7 +59,7 @@ fun FilamentViewer(item: Item) {
     AndroidView({ context ->
         TextureView(context).also { textureView ->
             val (engine) = item.itemScene
-            modelViewer = ModelViewer(engine, textureView).also { modelViewer ->
+            modelViewer = ModelViewer(engine, textureView, autoRotate).also { modelViewer ->
                 setupModelViewer(modelViewer)
 
                 textureView.setOnTouchListener { _, event ->

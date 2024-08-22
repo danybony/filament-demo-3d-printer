@@ -17,7 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import it.danielebonaldo.filamentdemo.ui.composables.ItemScreen
+import it.danielebonaldo.filamentdemo.ui.composables.ItemsListScreen
 import it.danielebonaldo.filamentdemo.ui.theme.FilamentDemo3dPrinterTheme
 
 class MainActivity : ComponentActivity() {
@@ -35,16 +35,20 @@ class MainActivity : ComponentActivity() {
                     containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
                     modifier = Modifier.fillMaxSize()
                 ) { innerPadding ->
-                    val item = viewModel.itemsUiState.items.firstOrNull()
-                    if (item != null) {
-                        ItemScreen(
-                            item = item,
-                            onColorSelected = { viewModel.onColorSelected(item, it) },
-                            onMetallicUpdated = { viewModel.onMetallicUpdated(item, it) },
-                            onRoughnessUpdated = { viewModel.onRoughnessUpdated(item, it) },
-                            modifier = Modifier.padding(innerPadding)
-                        )
-                    }
+//                    val item = viewModel.itemsUiState.items.firstOrNull()
+//                    if (item != null) {
+//                        ItemScreen(
+//                            item = item,
+//                            onColorSelected = { viewModel.onColorSelected(item, it) },
+//                            onMetallicUpdated = { viewModel.onMetallicUpdated(item, it) },
+//                            onRoughnessUpdated = { viewModel.onRoughnessUpdated(item, it) },
+//                            modifier = Modifier.padding(innerPadding)
+//                        )
+//                    }
+
+                    ItemsListScreen(
+                        items = viewModel.itemsUiState.items,
+                        modifier = Modifier.padding(innerPadding))
                 }
             }
         }

@@ -24,7 +24,7 @@ import it.danielebonaldo.filamentdemo.models.Item
 import it.danielebonaldo.filamentdemo.models.ItemMaterial
 import it.danielebonaldo.filamentdemo.models.ItemScene
 import it.danielebonaldo.filamentdemo.models.ItemsUiState
-import kotlinx.collections.immutable.persistentListOf
+import it.danielebonaldo.filamentdemo.models.allItems
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 
@@ -56,7 +56,7 @@ class FilamentViewModel(
 
     private fun initFilament() {
         viewModelScope.launch {
-            val newScene = engine.createScene()
+
 
             val ibl = "default_env"
             readCompressedAsset(application, "envs/${ibl}/${ibl}_ibl.ktx").let {
@@ -72,37 +72,50 @@ class FilamentViewModel(
                 .direction(0.28f, -0.6f, -0.76f)
                 .build(engine, light)
 
-            val asset = readCompressedAsset(application, "models/vesa_support.glb").let {
-                val asset = loadModelGlb(assetLoader, resourceLoader, it)
-                transformToUnitCube(engine, asset)
-                asset
+            val items = mutableListOf<Item>()
+
+            allItems.forEachIndexed { index, item ->
+                val newScene = engine.createScene()
+                val asset = readCompressedAsset(application, "models/${item.assetModel}.glb").let {
+                    val asset = loadModelGlb(assetLoader, resourceLoader, it)
+                    transformToUnitCube(engine, asset, item.topDownView)
+                    asset
+                }
+
+                newScene.addEntities(asset.entities)
+
+                newScene.indirectLight = indirectLight
+                newScene.skybox = null
+                newScene.addEntity(light)
+
+                val itemScene = ItemScene(
+                    engine = engine,
+                    scene = newScene,
+                    resourceLoader = resourceLoader,
+                    asset = asset
+                )
+
+                items.add(
+                    Item(
+                        id = index,
+                        name = item.name,
+                        printTime = formatPrintTime(item.printTimeMin),
+                        itemScene = itemScene,
+                        material = ItemMaterial()
+                    )
+                )
             }
 
-            newScene.addEntities(asset.entities)
-
-            newScene.indirectLight = indirectLight
-            newScene.skybox = null
-            newScene.addEntity(light)
-
-            val itemScene = ItemScene(
-                engine = engine,
-                scene = newScene,
-                resourceLoader = resourceLoader,
-                asset = asset
-            )
-
-            val item = Item(
-                id = 0,
-                name = "VESA Support",
-                printTime = "2h 45m",
-                itemScene = itemScene,
-                material = ItemMaterial()
-            )
-
             itemsUiState = itemsUiState.copy(
-                items = persistentListOf(item)
+                items = items.toImmutableList()
             )
         }
+    }
+
+    private fun formatPrintTime(totalMinutes: Int): String {
+        val hours = totalMinutes / 60
+        val minutes = totalMinutes % 60
+        return if (hours > 0) "${hours}h ${minutes}m" else "${minutes}m"
     }
 
     fun onColorSelected(item: Item, color: Color) {

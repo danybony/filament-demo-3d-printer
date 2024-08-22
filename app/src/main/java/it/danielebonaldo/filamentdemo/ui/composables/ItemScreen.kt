@@ -40,7 +40,7 @@ fun ItemScreen(
         ParameterSlider("Metallic", item.material.metallicFactor, onMetallicUpdated)
         ParameterSlider("Roughness", item.material.roughness, onRoughnessUpdated)
 
-        FilamentViewer(item = item)
+        FilamentViewer(item = item, autoRotate = false)
     }
 }
 

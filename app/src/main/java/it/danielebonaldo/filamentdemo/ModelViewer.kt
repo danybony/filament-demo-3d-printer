@@ -73,7 +73,7 @@ class ModelViewer(
         addDetachListener(textureView)
 
         cameraManipulator = Manipulator.Builder()
-            .orbitHomePosition(4.0f, 0.5f,4.0f)
+            .orbitHomePosition(4.0f, 0.5f, 4.0f)
             .viewport(textureView.width, textureView.height)
             .orbitSpeed(0.005f, 0.005f)
             .build(Manipulator.Mode.ORBIT)
@@ -89,7 +89,7 @@ class ModelViewer(
             animator.addUpdateListener { a ->
                 val v = (a.animatedValue as Float) + start
                 camera.lookAt(
-                    cos(v) * 5.0, 0.5, sin(v) * 5.0,
+                    cos(v) * 4.0, 0.5, sin(v) * 4.0,
                     0.0, 0.0, 0.0,
                     0.0, 1.0, 0.0
                 )
@@ -115,12 +115,14 @@ class ModelViewer(
             return
         }
 
-        cameraManipulator.getLookAt(eyePos, target, upward)
-        camera.lookAt(
-            eyePos[0], eyePos[1], eyePos[2],
-            target[0], target[1], target[2],
-            upward[0], upward[1], upward[2]
-        )
+        if (!autoRotate) {
+            cameraManipulator.getLookAt(eyePos, target, upward)
+            camera.lookAt(
+                eyePos[0], eyePos[1], eyePos[2],
+                target[0], target[1], target[2],
+                upward[0], upward[1], upward[2]
+            )
+        }
 
         // Render the scene, unless the renderer wants to skip the frame.
         if (renderer.beginFrame(swapChain!!, frameTimeNanos)) {
