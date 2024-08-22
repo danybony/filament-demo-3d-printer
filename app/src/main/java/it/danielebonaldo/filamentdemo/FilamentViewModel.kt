@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
@@ -14,7 +15,6 @@ import com.google.android.filament.Engine
 import com.google.android.filament.EntityManager
 import com.google.android.filament.IndirectLight
 import com.google.android.filament.LightManager
-import com.google.android.filament.Skybox
 import com.google.android.filament.gltfio.AssetLoader
 import com.google.android.filament.gltfio.ResourceLoader
 import com.google.android.filament.gltfio.UbershaderProvider
@@ -24,6 +24,7 @@ import it.danielebonaldo.filamentdemo.models.Item
 import it.danielebonaldo.filamentdemo.models.ItemScene
 import it.danielebonaldo.filamentdemo.models.ItemsUiState
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 
 class FilamentViewModel(
@@ -90,9 +91,11 @@ class FilamentViewModel(
             )
 
             val item = Item(
+                id = 0,
                 name = "VESA Support",
                 printTime = "2h 45m",
-                itemScene = itemScene
+                itemScene = itemScene,
+                currentColor = Color.Gray
             )
 
             itemsUiState = itemsUiState.copy(
@@ -101,13 +104,27 @@ class FilamentViewModel(
         }
     }
 
+    fun onColorSelected(item: Item, color: Color) {
+        itemsUiState = itemsUiState.copy(
+            buildList {
+                itemsUiState.items.forEach {
+                    if (it.id == item.id) {
+                        add(it.copy(currentColor = color))
+                    } else {
+                        add(it)
+                    }
+                }
+            }.toImmutableList()
+        )
+    }
+
     override fun onCleared() {
         super.onCleared()
         engine.lightManager.destroy(light)
         engine.destroyEntity(light)
         engine.destroyIndirectLight(indirectLight)
 
-        itemsUiState.items.forEach{
+        itemsUiState.items.forEach {
             engine.destroyScene(it.itemScene.scene)
             assetLoader.destroyAsset(it.itemScene.asset)
         }

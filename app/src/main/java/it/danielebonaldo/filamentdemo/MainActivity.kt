@@ -39,6 +39,9 @@ class MainActivity : ComponentActivity() {
                     if (item != null) {
                         ItemScreen(
                             item = item,
+                            onColorSelected = { color ->
+                                viewModel.onColorSelected(item, color)
+                            },
                             modifier = Modifier.padding(innerPadding)
                         )
                     }
