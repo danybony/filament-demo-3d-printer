@@ -1,13 +1,15 @@
 package it.danielebonaldo.filamentdemo.models
 
 import androidx.compose.ui.graphics.Color
+import kotlinx.collections.immutable.ImmutableList
 
 data class Item(
     val id: String,
     val name: String,
     val printTime: String,
     val material: ItemMaterial,
-    val itemScene: ItemScene
+    val itemScene: ItemScene,
+    val animations: ImmutableList<Animation>
 )
 
 sealed class ItemMaterial {
@@ -18,4 +20,20 @@ sealed class ItemMaterial {
     ) : ItemMaterial()
 
     data object Immutable : ItemMaterial()
+}
+
+data class Animation(
+    val name: String,
+    val durationSeconds: Float,
+    val targetState: State,
+    val startNano: Long
+) {
+    enum class State {
+        On, Off;
+
+        fun toggle() = when (this) {
+            On -> Off
+            Off -> On
+        }
+    }
 }

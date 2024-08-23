@@ -63,6 +63,7 @@ class MainActivity : ComponentActivity() {
                                 onColorSelected = { viewModel.onColorSelected(item, it) },
                                 onMetallicUpdated = { viewModel.onMetallicUpdated(item, it) },
                                 onRoughnessUpdated = { viewModel.onRoughnessUpdated(item, it) },
+                                onToggleAnimation = {animationId, state -> viewModel.onToggleAnimation(item, animationId, state)},
                                 modifier = Modifier.padding(innerPadding)
                             )
                         }

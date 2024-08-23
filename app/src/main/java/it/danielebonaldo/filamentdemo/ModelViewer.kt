@@ -1,6 +1,7 @@
 package it.danielebonaldo.filamentdemo
 
 import android.animation.ValueAnimator
+import android.view.Choreographer
 import android.view.MotionEvent
 import android.view.Surface
 import android.view.TextureView
@@ -14,8 +15,11 @@ import com.google.android.filament.View
 import com.google.android.filament.Viewport
 import com.google.android.filament.android.DisplayHelper
 import com.google.android.filament.android.UiHelper
+import com.google.android.filament.gltfio.Animator
 import com.google.android.filament.utils.GestureDetector
 import com.google.android.filament.utils.Manipulator
+import it.danielebonaldo.filamentdemo.models.Animation
+import kotlinx.collections.immutable.ImmutableList
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -49,6 +53,11 @@ class ModelViewer(
     private var swapChain: SwapChain? = null
     private val renderer: Renderer = engine.createRenderer()
 
+    private val choreographer: Choreographer
+    private val frameScheduler = FrameCallback()
+    private var filamentAnimator: Animator? = null
+    private var animations: List<Animation> = emptyList()
+
     private val cameraManipulator: Manipulator
     private val gestureDetector: GestureDetector
 
@@ -78,6 +87,8 @@ class ModelViewer(
             .orbitSpeed(0.005f, 0.005f)
             .build(Manipulator.Mode.ORBIT)
         gestureDetector = GestureDetector(textureView, cameraManipulator)
+
+        choreographer = Choreographer.getInstance()
 
         if (autoRotate) {
             val start = Random.nextFloat()
@@ -138,6 +149,7 @@ class ModelViewer(
 
             override fun onViewAttachedToWindow(v: android.view.View) {
                 detached = false
+                choreographer.postFrameCallback(frameScheduler)
             }
 
             override fun onViewDetachedFromWindow(v: android.view.View) {
@@ -150,11 +162,18 @@ class ModelViewer(
                     engine.destroyView(this@ModelViewer.view)
                     engine.destroyCameraComponent(camera.entity)
 
+                    choreographer.removeFrameCallback(frameScheduler)
+
                     detached = true
                 }
             }
         }
         view.addOnAttachStateChangeListener(AttachListener())
+    }
+
+    fun updateAnimations(filamentAnimator: Animator, animations: ImmutableList<Animation>) {
+        this.filamentAnimator = filamentAnimator
+        this.animations = animations
     }
 
     inner class SurfaceCallback : UiHelper.RendererCallback {
@@ -178,6 +197,30 @@ class ModelViewer(
             cameraManipulator.setViewport(width, height)
             val aspect = width.toDouble() / height.toDouble()
             camera.setProjection(kFovDegrees, aspect, kNearPlane, kFarPlane, Camera.Fov.VERTICAL)
+        }
+    }
+
+    inner class FrameCallback : Choreographer.FrameCallback {
+        override fun doFrame(frameTimeNanos: Long) {
+            choreographer.postFrameCallback(this)
+
+            animations.forEachIndexed { id, animation ->
+                filamentAnimator?.apply {
+                    val elapsedTimeSeconds = (frameTimeNanos - animation.startNano).toDouble() / 1_000_000_000
+                    if (elapsedTimeSeconds <= animation.durationSeconds) {
+                        applyAnimation(
+                            id, when (animation.targetState) {
+                                Animation.State.On -> elapsedTimeSeconds.toFloat()
+                                Animation.State.Off -> animation.durationSeconds - elapsedTimeSeconds.toFloat()
+                            }
+                        )
+                    }
+
+                    updateBoneMatrices()
+                }
+            }
+
+            render(frameTimeNanos)
         }
     }
 }

@@ -38,4 +38,10 @@ val allItems = listOf(
         true,
         80
     ),
+    ItemToLoad(
+        "Animated Car",
+        "animated_car",
+        false,
+        42
+    ),
 )

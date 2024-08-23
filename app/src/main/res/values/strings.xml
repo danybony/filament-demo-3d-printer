@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Filament Demo 3D items</string>
+    <string name="animations">Animations:</string>
 </resources>

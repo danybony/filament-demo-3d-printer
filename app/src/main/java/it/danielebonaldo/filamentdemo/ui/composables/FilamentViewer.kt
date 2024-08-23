@@ -3,13 +3,11 @@ package it.danielebonaldo.filamentdemo.ui.composables
 import android.util.Log
 import android.view.TextureView
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.viewinterop.AndroidView
 import com.google.android.filament.Colors
 import it.danielebonaldo.filamentdemo.ModelViewer
@@ -23,14 +21,6 @@ fun FilamentViewer(
     autoRotate: Boolean
 ) {
     var modelViewer by remember { mutableStateOf<ModelViewer?>(null) }
-
-    LaunchedEffect(true) {
-        while (true) {
-            withFrameNanos { nano ->
-                modelViewer?.render(nano)
-            }
-        }
-    }
 
     SideEffect {
         val (engine, _, asset) = item.itemScene
@@ -57,6 +47,7 @@ fun FilamentViewer(
                 material.setParameter("roughnessFactor", item.material.roughness)
             }
         }
+        modelViewer?.updateAnimations(item.itemScene.asset.instance.animator, item.animations)
     }
 
     AndroidView({ context ->

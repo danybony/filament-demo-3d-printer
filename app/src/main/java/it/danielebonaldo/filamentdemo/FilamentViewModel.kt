@@ -16,15 +16,18 @@ import com.google.android.filament.EntityManager
 import com.google.android.filament.IndirectLight
 import com.google.android.filament.LightManager
 import com.google.android.filament.gltfio.AssetLoader
+import com.google.android.filament.gltfio.FilamentAsset
 import com.google.android.filament.gltfio.ResourceLoader
 import com.google.android.filament.gltfio.UbershaderProvider
 import com.google.android.filament.utils.KTX1Loader
 import com.google.android.filament.utils.Utils
+import it.danielebonaldo.filamentdemo.models.Animation
 import it.danielebonaldo.filamentdemo.models.Item
 import it.danielebonaldo.filamentdemo.models.ItemMaterial
 import it.danielebonaldo.filamentdemo.models.ItemScene
 import it.danielebonaldo.filamentdemo.models.ItemsUiState
 import it.danielebonaldo.filamentdemo.models.allItems
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 
@@ -107,7 +110,8 @@ class FilamentViewModel(
                         name = item.name,
                         printTime = formatPrintTime(item.printTimeMin),
                         itemScene = itemScene,
-                        material = material
+                        material = material,
+                        animations = extractAnimations(asset)
                     )
                 )
             }
@@ -122,6 +126,22 @@ class FilamentViewModel(
         val hours = totalMinutes / 60
         val minutes = totalMinutes % 60
         return if (hours > 0) "${hours}h ${minutes}m" else "${minutes}m"
+    }
+
+    private fun extractAnimations(asset: FilamentAsset): ImmutableList<Animation> {
+        val animator = asset.instance.animator
+        return buildList {
+            repeat(animator.animationCount) { animationId ->
+                add(
+                    Animation(
+                        name = animator.getAnimationName(animationId),
+                        durationSeconds = animator.getAnimationDuration(animationId),
+                        targetState = Animation.State.Off,
+                        startNano = 0L
+                    )
+                )
+            }
+        }.toImmutableList()
     }
 
     fun onColorSelected(item: Item, color: Color) {
@@ -147,6 +167,37 @@ class FilamentViewModel(
                         add(
                             it.copy(
                                 material = (it.material as ItemMaterial.Mutable).update()
+                            )
+                        )
+                    } else {
+                        add(it)
+                    }
+                }
+            }.toImmutableList()
+        )
+    }
+
+    fun onToggleAnimation(item: Item, targetAnimationId: Int, state: Animation.State) {
+        itemsUiState = itemsUiState.copy(
+            items = buildList {
+                itemsUiState.items.forEach {
+                    if (it.id == item.id) {
+                        add(
+                            it.copy(
+                                animations = buildList {
+                                    it.animations.forEachIndexed { animId, animation ->
+                                        if (animId == targetAnimationId) {
+                                            add(
+                                                animation.copy(
+                                                    targetState = state,
+                                                    startNano = System.nanoTime()
+                                                )
+                                            )
+                                        } else {
+                                            add(animation)
+                                        }
+                                    }
+                                }.toImmutableList()
                             )
                         )
                     } else {
