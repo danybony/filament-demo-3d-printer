@@ -12,15 +12,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
-import androidx.compose.material3.Slider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import it.danielebonaldo.filamentdemo.models.Item
+import it.danielebonaldo.filamentdemo.models.ItemMaterial
 
 @Composable
 fun ItemScreen(
@@ -36,10 +37,11 @@ fun ItemScreen(
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.primary
         )
-        ColorSelector(item.material.color, onColorSelected)
-        ParameterSlider("Metallic", item.material.metallicFactor, onMetallicUpdated)
-        ParameterSlider("Roughness", item.material.roughness, onRoughnessUpdated)
-
+        if (item.material is ItemMaterial.Mutable) {
+            ColorSelector(item.material.color, onColorSelected)
+            ParameterSlider("Metallic", item.material.metallicFactor, onMetallicUpdated)
+            ParameterSlider("Roughness", item.material.roughness, onRoughnessUpdated)
+        }
         FilamentViewer(item = item, autoRotate = false)
     }
 }
@@ -78,7 +80,9 @@ fun ParameterSlider(
     currentValue: Float,
     onValueUpdated: (Float) -> Unit
 ) {
-    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
         Text(text = name, modifier = Modifier.fillMaxWidth(0.3f))
         Slider(
             value = currentValue,

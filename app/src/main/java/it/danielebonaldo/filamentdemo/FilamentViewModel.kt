@@ -95,13 +95,19 @@ class FilamentViewModel(
                     asset = asset
                 )
 
+                val material = if (asset.entities.any { asset.getName(it)?.startsWith("imagetostl") == true }) {
+                    ItemMaterial.Mutable()
+                } else {
+                    ItemMaterial.Immutable
+                }
+
                 items.add(
                     Item(
                         id = index.toString(),
                         name = item.name,
                         printTime = formatPrintTime(item.printTimeMin),
                         itemScene = itemScene,
-                        material = ItemMaterial()
+                        material = material
                     )
                 )
             }
@@ -130,14 +136,17 @@ class FilamentViewModel(
         updateMaterial(item) { this.copy(roughness = value) }
     }
 
-    private fun updateMaterial(item: Item, update: ItemMaterial.() -> ItemMaterial) {
+    private fun updateMaterial(item: Item, update: ItemMaterial.Mutable.() -> ItemMaterial) {
+        if (item.material is ItemMaterial.Immutable) {
+            return
+        }
         itemsUiState = itemsUiState.copy(
             items = buildList {
                 itemsUiState.items.forEach {
                     if (it.id == item.id) {
                         add(
                             it.copy(
-                                material = it.material.update()
+                                material = (it.material as ItemMaterial.Mutable).update()
                             )
                         )
                     } else {

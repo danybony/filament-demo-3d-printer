@@ -10,8 +10,12 @@ data class Item(
     val itemScene: ItemScene
 )
 
-data class ItemMaterial(
-    val color: Color = Color.Gray,
-    val roughness: Float = 1f,
-    val metallicFactor: Float = 0f
-)
+sealed class ItemMaterial {
+    data class Mutable(
+        val color: Color = Color.Gray,
+        val roughness: Float = 1f,
+        val metallicFactor: Float = 0f
+    ) : ItemMaterial()
+
+    data object Immutable : ItemMaterial()
+}
