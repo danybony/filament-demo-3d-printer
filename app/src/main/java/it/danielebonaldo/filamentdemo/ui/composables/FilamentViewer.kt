@@ -1,6 +1,8 @@
 package it.danielebonaldo.filamentdemo.ui.composables
 
 import android.util.Log
+import android.view.GestureDetector
+import android.view.MotionEvent
 import android.view.TextureView
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
@@ -24,7 +26,7 @@ fun FilamentViewer(
 
     SideEffect {
         val (engine, _, asset) = item.itemScene
-        modelViewer?.scene = item.itemScene.scene
+        modelViewer?.scene = item.itemScene
 
         if (item.material is ItemMaterial.Mutable) {
             asset.entities.find {
@@ -53,11 +55,18 @@ fun FilamentViewer(
     AndroidView({ context ->
         TextureView(context).also { textureView ->
             val (engine) = item.itemScene
+            val singleTapDetector = GestureDetector(context, object: GestureDetector.SimpleOnGestureListener() {
+                override fun onSingleTapUp(event: MotionEvent): Boolean {
+                    modelViewer?.onTap(event)
+                    return super.onSingleTapUp(event)
+                }
+            })
             modelViewer = ModelViewer(engine, textureView, autoRotate).also { modelViewer ->
                 setupModelViewer(modelViewer)
                 if (!autoRotate) {
                     textureView.setOnTouchListener { _, event ->
                         modelViewer.onTouchEvent(event)
+                        singleTapDetector.onTouchEvent(event)
                         true
                     }
                 }

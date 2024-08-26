@@ -1,6 +1,7 @@
 package it.danielebonaldo.filamentdemo
 
 import android.animation.ValueAnimator
+import android.util.Log
 import android.view.Choreographer
 import android.view.MotionEvent
 import android.view.Surface
@@ -9,7 +10,6 @@ import android.view.animation.LinearInterpolator
 import com.google.android.filament.Camera
 import com.google.android.filament.Engine
 import com.google.android.filament.Renderer
-import com.google.android.filament.Scene
 import com.google.android.filament.SwapChain
 import com.google.android.filament.View
 import com.google.android.filament.Viewport
@@ -19,6 +19,7 @@ import com.google.android.filament.gltfio.Animator
 import com.google.android.filament.utils.GestureDetector
 import com.google.android.filament.utils.Manipulator
 import it.danielebonaldo.filamentdemo.models.Animation
+import it.danielebonaldo.filamentdemo.models.ItemScene
 import kotlinx.collections.immutable.ImmutableList
 import kotlin.math.PI
 import kotlin.math.cos
@@ -42,9 +43,9 @@ class ModelViewer(
     }
     val camera: Camera =
         engine.createCamera(engine.entityManager.create()).apply { setExposure(kAperture, kShutterSpeed, kSensitivity) }
-    var scene: Scene? = null
+    var scene: ItemScene? = null
         set(value) {
-            view.scene = value
+            view.scene = value?.scene
             field = value
         }
 
@@ -118,6 +119,17 @@ class ModelViewer(
     fun onTouchEvent(event: MotionEvent) {
         if (!autoRotate) {
             gestureDetector.onTouchEvent(event)
+        }
+    }
+
+    fun onTap(event: MotionEvent) {
+        view.pick(
+            event.x.toInt(),
+            textureView.height - event.y.toInt(),
+            textureView.handler,
+        ) { queryResult ->
+            val name = scene?.asset?.getName(queryResult.renderable) ?: return@pick
+            Log.d("ModelViewer", "Tapped on $name")
         }
     }
 
